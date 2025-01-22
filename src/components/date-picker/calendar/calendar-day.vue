@@ -31,7 +31,7 @@ const props = defineProps({
 });
 
 const classDay = computed(() => {
-  const result = ['day'];
+  const result = ['text-center', 'p-1', 'w-100', 'rounded', 'fs-6 fw-light', 'day'];
 
   if (props.disabled) {
     result.push('day--disabled');
@@ -69,10 +69,11 @@ const dayOnClick = (event) => {
 .day--selected,
 .day--in-range,
 .day--not-in-month {
-  text-align: center;
-  padding: 0.5rem;
   color: #010101;
-  width: 100%;
+}
+
+.day:hover {
+  background-color: #f0f0f0;
 }
 
 .day,
@@ -84,6 +85,10 @@ const dayOnClick = (event) => {
 .day--disabled {
   color: #ccc;
   cursor: not-allowed;
+}
+
+.day--disabled:hover {
+  background-color: transparent;
 }
 
 .day--not-in-month {

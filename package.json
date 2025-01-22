@@ -12,6 +12,7 @@
     "@floating-ui/dom": "^1.6.13",
     "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.3",
+    "inputmask": "^5.0.9",
     "luxon": "^3.5.0",
     "vue": "^3.5.13"
   },

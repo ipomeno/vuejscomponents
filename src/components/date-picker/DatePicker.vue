@@ -1,23 +1,50 @@
 <script setup>
 import Calendar from './calendar/calendar.vue';
+import { computed, onMounted, ref } from 'vue';
+
+import im from 'inputmask';
 import { computePosition, flip, offset, shift } from '@floating-ui/dom';
-import { computed } from 'vue';
+import { DateTime } from 'luxon';
 
 const props = defineProps({
   id: {
     type: String,
     required: true,
   },
+  modelValue: {
+    type: String,
+    required: false,
+    default: null,
+  },
 });
 
 const calendarContainerId = computed(() => `${props.id}-calendar-container`);
 const calendarButtonId = computed(() => `${props.id}-calendar-button`);
+const inputValue = ref(props.modelValue);
+const emits = defineEmits(['update:modelValue']);
+
+onMounted(() => {
+  const input = document.getElementById(props.id);
+  const inputMask = im('99/99/9999', {
+    'oncomplete': (event) => {
+      let value = event.target.value;
+      inputValue.value = value;
+      
+      value = DateTime.fromFormat(value, 'dd/MM/yyyy').toISODate();
+      emits('update:modelValue', value);
+    },
+  }).mask(input);
+
+  if (props.modelValue) {
+    inputMask.setValue(DateTime.fromISO(props.modelValue).toFormat('dd/MM/yyyy'));
+  }
+});
 
 async function updatePosition(input, calendarContainer) {
   const {x, y} = await computePosition(input, calendarContainer, {
     placement: 'bottom',
     middleware: [
-      offset(6),
+      offset(4),
       flip(),
       shift({ padding: 5 }),
     ],
@@ -32,11 +59,9 @@ async function updatePosition(input, calendarContainer) {
 async function showCalendar() {
   const input = document.getElementById(props.id);
   const calendarContainer = document.getElementById(calendarContainerId.value);
-  const buttonClose = calendarContainer.querySelector('button');
 
   calendarContainer.style.display = 'block';
   await updatePosition(input, calendarContainer);
-  buttonClose.focus();
 }
 
 function hideCalendar() {
@@ -45,34 +70,31 @@ function hideCalendar() {
   calendarContainer.style.display = 'none';
   buttonOpen.focus();
 }
+
+function selectDate(date) {
+  inputValue.value = DateTime.fromISO(date).toFormat('dd/MM/yyyy');
+  emits('update:modelValue', date);
+  hideCalendar();
+}
 </script>
 
 <template>
   <div class="field-container">
-   <div class="date-input-container">
-    <input type="text" :id="props.id" />
-    <button type="button" :id="`${props.id}-calendar-button`" class="calendar-button"
-      @click="showCalendar()">&nbsp;</button>
+   <div class="date-input-container input-group mb-3">
+    <input type="text" class="form-control" :id="props.id" :value="inputValue"/>
+    <button type="button" :id="`${props.id}-calendar-button`" class="btn btn-secondary calendar-button"
+      @click="showCalendar()">
+      <i class="fa fa-calendar"></i>
+    </button>
    </div>
-    <div :id="`${props.id}-calendar-container`" class="datepicker-container">
-      <div class="calendar-content">
-        <calendar />
-        <button type="button" @click="hideCalendar()">Close</button>
-      </div>
+    <div :id="`${props.id}-calendar-container`" class="position-absolute p-0 m-0 datepicker-container">
+        <calendar :date="modelValue" @select="selectDate($event)"/>
     </div>
   </div>
 </template>
 
 <style scoped>
-.field-container {
-  margin: 10px 0px;
-}
 .datepicker-container {
   display: none;
-  position: absolute;
-  top: 0;
-  left: 0;
-  border: 2px solid black;
-  padding: 10px;
 }
 </style>

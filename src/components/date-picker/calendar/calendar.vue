@@ -1,14 +1,12 @@
 <template>
-  <div class="calendar-container p-2 border border-1 rounded bg-white shadow">
+  <div class="calendar-container p-2 border border-1 rounded bg-white">
     <calendar-header :date="actualDate" 
       @movePreviousMonth="movePreviousMonth" 
       @moveNextMonth="moveNextMonth" />
 
-    <calendar-body 
-      :date="actualDate" 
-      :start-date="startDate" 
-      :end-date="endDate"
-      @select="selectDate($event)" />
+      <!-- :start-date="startDate"
+      :end-date="endDate" -->
+    <calendar-body :model-value="date" :date="actualDate" @select="selectDate($event)" />
   </div>
 </template>
 
@@ -17,9 +15,14 @@ import CalendarHeader from './calendar-header.vue';
 import CalendarBody from './calendar-body.vue';
 
 import { createNewDateTimeISO, plusMonth, subMonth } from './calendar-lib';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 
 const props = defineProps({
+  date: {
+    type: String,
+    required: false,
+    default: null,
+  },
   startDate: {
     type: String,
     required: false,
@@ -33,8 +36,16 @@ const props = defineProps({
 });
 
 const actualDate = ref(createNewDateTimeISO());
+watch(() => props.date, (newValue) => {
+  actualDate.value = newValue;
+});
 
 onMounted(() => {
+  if (props.date) {
+    actualDate.value = props.date;
+    return;
+  }
+
   actualDate.value = createNewDateTimeISO();
 });
 
